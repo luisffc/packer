@@ -18,6 +18,9 @@ type hook struct {
 // HookServer wraps a packer.Hook implementation and makes it exportable
 // as part of a Golang RPC server.
 type HookServer struct {
+	context       context.Context
+	contextCancel func()
+
 	hook packer.Hook
 	mux  *muxBroker
 }
@@ -51,17 +54,25 @@ func (h *hook) Cancel() {
 	}
 }
 
-func (h *HookServer) Run(ctx context.Context, args *HookRunArgs, reply *interface{}) error {
+func (h *HookServer) Run(args *HookRunArgs, reply *interface{}) error {
 	client, err := newClientWithMux(h.mux, args.StreamId)
 	if err != nil {
 		return NewBasicError(err)
 	}
 	defer client.Close()
 
-	if err := h.hook.Run(ctx, args.Name, client.Ui(), client.Communicator(), args.Data); err != nil {
+	if h.context == nil {
+		h.context, h.contextCancel = context.WithCancel(context.Background())
+	}
+	if err := h.hook.Run(h.context, args.Name, client.Ui(), client.Communicator(), args.Data); err != nil {
 		return NewBasicError(err)
 	}
 
 	*reply = nil
+	return nil
+}
+
+func (h *HookServer) Cancel(args *interface{}, reply *interface{}) error {
+	h.contextCancel()
 	return nil
 }
