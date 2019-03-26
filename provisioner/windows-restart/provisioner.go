@@ -287,16 +287,6 @@ var waitForCommunicator = func(ctx context.Context, p *Provisioner) error {
 	return nil
 }
 
-func (p *Provisioner) Cancel() {
-	log.Printf("Received interrupt Cancel()")
-
-	p.cancelLock.Lock()
-	defer p.cancelLock.Unlock()
-	if p.cancel != nil {
-		close(p.cancel)
-	}
-}
-
 // retryable will retry the given function over and over until a
 // non-error is returned.
 func (p *Provisioner) retryable(f func() error) error {
