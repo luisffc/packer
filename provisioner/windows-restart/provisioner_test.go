@@ -349,17 +349,13 @@ func TestProvision_Cancel(t *testing.T) {
 	waitStart := make(chan bool)
 	waitDone := make(chan bool)
 
+	ctx, cancel := context.WithCancel(context.Background())
+
 	// Block until cancel comes through
 	waitForCommunicator = func(ctx context.Context, p *Provisioner) error {
 		waitStart <- true
-		panic("this test is incorrect")
-		for {
-			select {
-			case <-p.cancel:
-			}
-		}
+		return nil
 	}
-	ctx, cancel := context.WithCancel(context.Background())
 
 	// Create two go routines to provision and cancel in parallel
 	// Provision will block until cancel happens
