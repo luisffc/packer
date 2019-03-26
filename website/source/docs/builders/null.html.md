@@ -27,6 +27,7 @@ provisioners are defined, but it will connect to the specified host via ssh.
 {
   "type":         "null",
   "ssh_host":     "127.0.0.1",
+  "ssh_port":     "22", # Optional
   "ssh_username": "foo",
   "ssh_password": "bar"
 }
